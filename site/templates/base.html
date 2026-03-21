@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Journals | {% block title %}{% endblock %}</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/styles.css')}} "
+        />
+        {% if PLAUSIBLE_SRC_URL and PLAUSIBLE_DATA_API and PLAUSIBLE_DOMAIN %}
+        <!--Plausible Analytics-->
+        <script
+            defer
+            src="{{ PLAUSIBLE_SRC_URL }}"
+            data-api="{{ PLAUSIBLE_DATA_API }}"
+            data-domain="{{ PLAUSIBLE_DOMAIN }}"
+        ></script>
+        {% endif %}
+        {% if IS_DEV %}
+        <!--Auto reload script for development-->
+        <script src="/static/js/auto-reload.js"></script>
+        {% endif %}
+    </head>
+    <body>
+        {% include "header.html" %}
+
+        <main>
+            {% block content %}
+            <h1>Something broke</h1>
+            {% endblock %}
+        </main>
+
+        {% include "footer.html" %}
+    </body>
+</html>

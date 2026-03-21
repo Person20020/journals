@@ -1,0 +1,23 @@
+services:
+  web:
+    build: ./site
+    volumes:
+      -pages-data:/app/templates/journals:ro
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    environment:
+      - PLAUSIBLE_SRC_URL=
+      - PLAUSIBLE_DOMAIN=
+      - GITHUB_USERNAME=
+  scraper:
+    build: ./scraper
+    volumes:
+      -pages-data:/app/data
+    restart: unless-stopped
+    environment:
+      - GITHUB_USERNAME=
+      - GITHUB_TOKEN=
+      - SCRAPE_INTERVAL=3600
+volumes:
+  pages-data:

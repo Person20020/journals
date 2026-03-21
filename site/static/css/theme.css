@@ -1,0 +1,38 @@
+@font-face {
+    font-family: NewStroke;
+    src: "/static/font/NewStroke-T0.125.ttf";
+}
+
+:root {
+    /* A Onedark theme */
+    --color-primary: #e06c75;
+    --color-accent: #528bff;
+    --color-accent-secondary: #d19a66;
+
+    --color-background: #282c34;
+    --color-background-secondary: #636d83;
+
+    --color-foreground: #abb2bf;
+
+    --color-text: var(--color-foreground);
+    --color-link: #98c379;
+
+    --color-border: var(--color-foreground);
+    --color-box-shadow: var(--color-foreground);
+
+    --border-sm: 2px;
+    --border-md: 4px;
+    --border-lg: 8px;
+
+    --box-shadow-sm: 4px var(--color-box-shadow) ;
+    --box-shadow-md: 8px var(--color-box-shadow);
+    --box-shadow-lg: 16px var(--color-box-shadow);
+
+    --spacing-horizontal-sm: 6px;
+    --spacing-horizontal-md: 10px;
+    --spacing-horizontal-lg: 14px;
+
+    --spacing-vertical-sm: 6px;
+    --spacing-vertical-md: 10px;
+    --spacing-vertical-lg: 14px;
+}

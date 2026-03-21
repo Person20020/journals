@@ -1,0 +1,32 @@
+<link
+    rel="stylesheet"
+    href=" {{url_for('static', filename='css/footer.css')}} "
+/>
+
+<footer>
+    {% if GITHUB_USERNAME %}
+    <a
+        href="https://github.com/{{GITHUB_USERNAME}}"
+        target="_blank"
+        rel="noopener noreferrer"
+        >@{{GITHUB_USERNAME}}</a
+    >
+    {% else %}
+    <p>
+        Made by
+        <a
+            href="https://github.com/person20020"
+            target="_blank"
+            rel="noopener noreferrer"
+            >@Person20020</a
+        >
+    </p>
+    {% endif %}
+    <p>|</p>
+    <a
+        href="https://github.com/person20020/journals"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Source</a
+    >
+</footer>
