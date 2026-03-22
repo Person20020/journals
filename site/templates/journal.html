@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ journal.title }}{% endblock %}
+
+{% block content %}
+<a href="/">&larr; Back to Home</a>
+<h1>{{ journal.title }}</h1>
+<p><strong>Project description:</strong> {{ journal.description }}</p>
+<p><strong>Last updated:</strong> {{ journal.last_updated }}</p>
+{% if journal.image_url %}
+<img src="{{ journal.image_url }}"
+    {% if journal.image_alt_text %}
+    alt="{{ journal.image_alt_text }}"
+    {% endif %}
+>
+{% endif %}
+<p>
+    <a href="{{ journal.repo_url }}" target="_blank">View project repository</a>
+</p>
+<div>
+    {{ journal.journal_content }}
+</div>
+{% endblock %}

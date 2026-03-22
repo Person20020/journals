@@ -2,22 +2,22 @@ services:
   web:
     build: ./site
     volumes:
-      -pages-data:/app/templates/journals:ro
+      -journals-data:/app/templates/journals:ro
     ports:
       - "5000:5000"
     restart: unless-stopped
     environment:
-      - PLAUSIBLE_SRC_URL=
-      - PLAUSIBLE_DOMAIN=
-      - GITHUB_USERNAME=
-  scraper:
-    build: ./scraper
+      - PLAUSIBLE_SRC_URL=  # Optional
+      - PLAUSIBLE_DATA_API=  # Optional
+      - PLAUSIBLE_DATA_DOMAIN=  # Optional
+      - GITHUB_USERNAME=  # Optional
+  collector:
+    build: ./collector
     volumes:
-      -pages-data:/app/data
+      -journals-data:/app/data
     restart: unless-stopped
     environment:
-      - GITHUB_USERNAME=
-      - GITHUB_TOKEN=
-      - CHECK_INTERVAL=3600
+      - GITHUB_USERNAME=  # Required
+      - GITHUB_TOKEN=  # Required
 volumes:
-  pages-data:
+  journals-data:

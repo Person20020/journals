@@ -1,16 +1,22 @@
+import datetime
 import logging
 import os
-import sys
+import sqlite3
+from typing import Any
 
 import flask
+import markdown
+import markupsafe
 
 PLAUSIBLE_SRC_URL = os.getenv("PLAUSIBLE_SRC_URL", "")
 PLAUSIBLE_DATA_API = os.getenv("PLAUSIBLE_DATA_API", "")
-PLAUSIBLE_DOMAIN = os.getenv("PLAUSIBLE_DOMAIN", "")
+PLAUSIBLE_DATA_DOMAIN = os.getenv("PLAUSIBLE_DATA_DOMAIN", "")
 
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 
-IS_DEV = os.getenv("FLASK_ENV") == "development"
+IS_DEV = os.getenv("DEV", "False").lower() == "true"
+
+DB_PATH = "/app/app/data/journals.db" if not IS_DEV else "../journals.db"
 
 logging.basicConfig(
     level=logging.DEBUG if IS_DEV else logging.WARNING,
@@ -20,27 +26,55 @@ logger = logging.getLogger(__name__)
 
 app = flask.Flask(__name__)
 if IS_DEV:
-    from flask_sock import Sock
+    try:
+        from flask_sock import Sock
 
-    sock = Sock(app)
+        sock = Sock(app)
+    except ImportError as e:
+        raise ImportError(
+            f"Failed to import Sock from flask_sock. Make sure to install the requirements-dev.txt or disable the DEV env variable: {e}"
+        )
 
 
-JOURNALS_DIR = os.path.realpath(os.path.join(app.root_path, "templates", "journals"))
+journals_db_fields = [
+    "title",
+    "description",
+    "start_date",
+    "image_url",
+    "image_alt_text",
+    "repo_url",
+    "last_updated",
+    "path",
+    "journal_content",
+]
 
 
-def get_journals():
+def get_journals(path="") -> dict[str, str] | list[dict[str, str]] | bool:
     """Get a list of dicts of journals with keys: title, description, last_updated, url, image_url, and repo_url"""
-    journals = []
-    for i in range(9):
-        journals.append({
-            "title": f"Example Project {i}",
-            "description": "This is an example description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            "last_updated": "2024-01-01",
-            "url": "/journals/example-journal",
-            "image_url": "https://placehold.co/400x200/abb2bf/636d83/",
-            "image_alt_text": "Example image",
-            "repo_url": f"https://github.com/{GITHUB_USERNAME}/example-journal",
-        })
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        SELECT {", ".join(journals_db_fields)} FROM journals {"WHERE path = ?" if path else ""} ORDER BY last_updated
+        """,
+        (f"/journals/{path}",) if path else (),
+    )
+    if path:
+        row = cursor.fetchone()
+        if not row:
+            return False
+        journal = {}
+        for i, field in enumerate(journals_db_fields):
+            journal[field] = row[i]
+        return journal
+    else:
+        journals = []
+        for i, row in enumerate(cursor.fetchall()):
+            journal = {}
+            for i, field in enumerate(journals_db_fields):
+                journal[field] = row[i]
+            journals.append(journal)
+
     return journals
 
 
@@ -51,7 +85,7 @@ def inject_globals():
         "IS_DEV": IS_DEV,
         "PLAUSIBLE_SRC_URL": PLAUSIBLE_SRC_URL,
         "PLAUSIBLE_DATA_API": PLAUSIBLE_DATA_API,
-        "PLAUSIBLE_DOMAIN": PLAUSIBLE_DOMAIN,
+        "PLAUSIBLE_DOMAIN": PLAUSIBLE_DATA_DOMAIN,
         "GITHUB_USERNAME": GITHUB_USERNAME,
     }
 
@@ -64,27 +98,38 @@ def index():
 # Project journals
 @app.route("/journals/<path>")
 def journal_pages(path):
-    try:
-        full_path = flask.safe_join(JOURNALS_DIR, path)
-    except Exception:
+    journal = get_journals(path)
+    if not journal:
         flask.abort(404)
+    journal["journal_content"] = (  # type: ignore
+        markupsafe.Markup(
+            markdown.markdown(
+                journal["journal_content"],  # type: ignore
+                extensions=[
+                    "fenced_code",
+                    "tables",
+                    "toc",
+                    "codehilite",
+                    "nl2br",
+                    "footnotes",
+                    "def_list",
+                    "admonition",
+                    "sane_lists",
+                ],
+            )
+        )
+    )
+    journal["last_updated"] = datetime.datetime.fromisoformat(  # type: ignore
+        journal["last_updated"]  # type: ignore
+    ).strftime("%B %d, %Y")
 
-    real_path = os.path.realpath(full_path)  # type: ignore[possibly-undefined]
-
-    # Check that path is inside the journals directory
-    if not real_path.startswith(JOURNALS_DIR + os.sep):
-        flask.abort(404)
-
-    # Check that the file exists
-    if not os.path.isfile(real_path):
-        flask.abort(404)
-
-    return flask.render_template(f"journals/{path}")
+    return flask.render_template(f"journal.html", journal=journal)
 
 
 # Auto reload websocket
 if IS_DEV:
-    @sock.route("/ws/auto-reload")  # type: ignore[possibly-undefined]
+
+    @sock.route("/ws/auto-reload")  # type: ignore
     def auto_reload_ws(ws):
         while True:
             ws.receive()

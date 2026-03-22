@@ -7,26 +7,35 @@
     formats them into pages.
 </p>
 
-<h2>Entries</h2>
+<h2>Projects</h2>
 
 <div class="journal-card-list">
+    {% if not journals %}
+    <h3>Could not get journals.</h3>
+    {% else %}
     {% for journal in journals %}
     <div class="journal-card">
-        <a href="{{ journal.url }}" class="journal-card-link">
+        <a href="{{ journal.path }}" class="journal-card-link">
             <h3 class="journal-card-title">{{ journal.title }}</h3>
         </a>
         <p class="journal-card-date">
             Last Updated: {{ journal.last_updated }}
         </p>
-        {# Most recent image from journal #}
+        {% if journal.image_url %}
+        {# Cover image. Hopefully I will change it to the most recent image from journal later #}
         <img
             class="journal-card-image"
+            width="auto"
             src="{{ journal.image_url }}"
+            {% if journal.image_alt_text %}
             alt="[{{ journal.image_alt_text }}]"
+            {% endif %}
         />
+        {% endif %}
         <p class="journal-card-description">{{ journal.description }}</p>
     </div>
     {% endfor %}
+    {% endif %}
 </div>
 
 {% endblock %}

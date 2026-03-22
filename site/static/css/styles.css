@@ -9,25 +9,68 @@ body {
     margin: 0;
 
     min-height: 100vh;
+    width: 100vw;
 
     display: flex;
     flex-direction: column;
 
     font-family: "NewStroke";
 
-    background-color: var(--color-background);
-
+    background-color: var(--color-background-secondary);
     color: var(--color-text);
+
+    word-wrap: break-word;
 }
 
 main {
     flex: 1;
 
-    padding: 16px;
+    padding: 1em;
+    padding-bottom: 3em;
+
+    align-items: center;
+
+    background-color: var(--color-background);
 }
+/* TODO: Set center main and set width based on screen size */
 
 a {
     color: var(--color-link);
+}
+
+code {
+    font-family: "NewStroke";
+}
+code:not([class]):not(.codehilite code) {
+    padding: 0.2em 0.4em;
+    border-radius: var(--border-sm);
+
+    background-color: var(--color-background-code);
+}
+pre.codehilite {
+    padding: 1em;
+
+    background-color: var(--color-background-code);
+    border-radius: var(--border-md);
+}
+
+table {
+    border-collapse: collapse;
+}
+table th,
+table td {
+    border: 1px solid var(--color-border);
+    padding: 0.5em 1em;
+}
+table th {
+    background-color: var(--color-background-secondary);
+}
+
+kbd {
+    padding: 0.2em 0.4em;
+    border-radius: var(--border-md);
+
+    background-color: var(--color-background-kbd);
 }
 
 /* Main page cards */
@@ -35,14 +78,14 @@ a {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 18px;
+    gap: 1em;
 }
 
 .journal-card {
-    max-width: 35em;
+    max-width: 30em;
     display: flex;
     flex-direction: column;
-    gap: .5em;
+    gap: 0.5em;
 
     border: 1px solid var(--color-border);
     padding: 1em;
@@ -58,6 +101,7 @@ a {
 .journal-card-description {
     display: -webkit-box;
     -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;

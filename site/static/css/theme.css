@@ -12,6 +12,9 @@
     --color-background: #282c34;
     --color-background-secondary: #636d83;
 
+    --color-background-code: #21252b;
+    --color-background-kbd: #424a56; /* key shortcuts */
+
     --color-foreground: #abb2bf;
 
     --color-text: var(--color-foreground);
@@ -28,11 +31,11 @@
     --box-shadow-md: 8px var(--color-box-shadow);
     --box-shadow-lg: 16px var(--color-box-shadow);
 
-    --spacing-horizontal-sm: 6px;
-    --spacing-horizontal-md: 10px;
-    --spacing-horizontal-lg: 14px;
+    --spacing-horizontal-sm: 0.5rem;
+    --spacing-horizontal-md: 1rem;
+    --spacing-horizontal-lg: 1.5rem;
 
-    --spacing-vertical-sm: 6px;
-    --spacing-vertical-md: 10px;
-    --spacing-vertical-lg: 14px;
+    --spacing-vertical-sm: 0.5rem;
+    --spacing-vertical-md: 1rem;
+    --spacing-vertical-lg: 1.5rem;
 }
