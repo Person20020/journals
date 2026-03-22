@@ -1,8 +1,5 @@
-{% extends "base.html" %}
-
-{% block title %}Home{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
 
 <h1>Journals</h1>
 <p>
@@ -13,16 +10,23 @@
 <h2>Entries</h2>
 
 <div class="journal-card-list">
-{% for journal in journals %}
+    {% for journal in journals %}
     <div class="journal-card">
         <a href="{{ journal.url }}" class="journal-card-link">
             <h3 class="journal-card-title">{{ journal.title }}</h3>
         </a>
-        <p class="journal-card-date">Last Updated: {{ journal.last_updated }}</p>
-        <img class="journal-card-image" src="{{ journal.image_url }}" alt="{{ journal.title }} image">
-        <p class="journal-card-description">{{ journal.description[:100] }}</p>
+        <p class="journal-card-date">
+            Last Updated: {{ journal.last_updated }}
+        </p>
+        {# Most recent image from journal #}
+        <img
+            class="journal-card-image"
+            src="{{ journal.image_url }}"
+            alt="[{{ journal.image_alt_text }}]"
+        />
+        <p class="journal-card-description">{{ journal.description }}</p>
     </div>
-{% endfor %}
+    {% endfor %}
 </div>
 
 {% endblock %}
