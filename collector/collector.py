@@ -1,5 +1,4 @@
 import base64
-import datetime
 import logging
 import os
 import sqlite3
@@ -121,12 +120,11 @@ def fetch_journals():
                 f"Failed to fetch commits for {repo_name}: {response_commit.status_code} - {response.text}"
             )
             continue
-        last_updated_time = response_commit.json()[0]["commit"]["author"]["date"]
-        last_updated = datetime.datetime.fromisoformat(last_updated_time)
+        last_updated = response_commit.json()[0]["commit"]["author"]["date"]
 
         journal_metadata = frontmatter.loads(journal_content_decoded)
 
-        show_on_site = journal_metadata.get("show_on_site", "False").lower() == "true"
+        show_on_site = journal_metadata.get("show_on_site", False)
         if not show_on_site:
             logger.info(
                 f"JOURNAL.md in repository {repo_name} is not marked to show on site"
@@ -161,7 +159,7 @@ def fetch_journals():
             image_url TEXT,
             image_alt_text TEXT,
             repo_url TEXT UNIQUE,
-            last_updated TIMESTAMP,
+            last_updated TEXT,
             journal_content TEXT
         )
         """
@@ -185,6 +183,19 @@ def fetch_journals():
             ),
         )
 
+    current_repo_urls = [journal["repo_url"] for journal in journals]
+    if current_repo_urls:
+        cursor.execute(
+            f"""
+            DELETE FROM journals
+            WHERE repo_url NOT IN ({",".join("?" for _ in current_repo_urls)})
+            """,
+            current_repo_urls,
+        )
+
+    conn.commit()
+    conn.close()
+
     logger.debug("Finished writing journals to database.")
 
 
@@ -193,14 +204,14 @@ logger.debug("Fetching journals on startup...")
 fetch_journals()
 
 # Then, check the user events API and save then continue to check every X-Poll-Interval seconds specified in the response, check the user events API again for changes. If there are changes, fetch the repositories and update the journals.
-while True:
-    events_url = f"{GITHUB_API_URL}/users/{GITHUB_USERNAME}/events"
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"token {GITHUB_TOKEN}" if GITHUB_TOKEN else None,
-        "X-GitHub-Api-Version": "2026-03-10",
-    }
+events_url = f"{GITHUB_API_URL}/users/{GITHUB_USERNAME}/events"
+headers = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"token {GITHUB_TOKEN}" if GITHUB_TOKEN else None,
+    "X-GitHub-Api-Version": "2026-03-10",
+}
 
+while True:
     logger.debug("Checking for user events...")
     response = requests.get(events_url, headers=headers)
     if response.status_code not in [200, 304]:
@@ -210,9 +221,19 @@ while True:
         continue
 
     if response.status_code == 200:
-        logger.debug("User events changed, fetching journals...")
-        fetch_journals()
+        poll_interval = int(response.headers.get("X-Poll-Interval", 60))
+        headers["If-None-Match"] = response.headers.get("ETag", "")
+        events = response.json()
+        relevant_events = {
+            "CreateEvent",
+            "DeleteEvent",
+            "PublicEvent",
+            "PushEvent",
+        }
+        if any(event["type"] in relevant_events for event in events):
+            logger.debug("User events changed, fetching journals...")
+            fetch_journals()
+    else:
+        logger.debug("No changes in user events.")
 
-    events = response.json()
-    headers.update({"ETag": response.headers.get("ETag", "")})
-    time.sleep(int(response.headers.get("X-Poll-Interval", 60)))
+    time.sleep(poll_interval if "poll_interval" in locals() else 60)  # type: ignore[undefined-variable]
