@@ -160,8 +160,8 @@ def fetch_journals():
                 "title": journal.get("title", repo_name),
                 "description": journal.get("description", ""),
                 "start_date": start_date,
-                "image_url": "replace",
-                "image_alt_text": "replace",
+                "image_url": journal.get("image_url", ""),
+                "image_alt_text": journal.get("image_alt_text", ""),
                 "repo_url": repo_url,
                 "last_updated": last_updated  # type: ignore
                 if "last_updated" in dir()
