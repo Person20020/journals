@@ -29,7 +29,7 @@ journal_content: # The content of the journal. Only the root directory of the re
 
 Every ~minute the GitHub user events API is checked for changes. When a change is found all repositories will be checked so it may take several minutes to update on the site. (Hopefully I will change this soon.)
 
-## Running
+## Running with Docker
 
 - Clone the repository:
 
@@ -45,10 +45,7 @@ GITHUB_TOKEN=github_pat_your_token
 PLAUSIBLE_SRC_URL=  # Optional
 PLAUSIBLE_DATA_API=  # Optional
 PLAUSIBLE_DATA_DOMAIN=  # Optional
-DEV= # Set true for dev
 ```
-
-### Docker
 
 Start the containers:
 
@@ -56,7 +53,18 @@ Start the containers:
 docker compose up -d
 ```
 
-### Dev via Python
+## Running with Python (Dev)
+
+Fill in the .env file
+
+```bash
+GITHUB_USERNAME=YourUsername
+GITHUB_TOKEN=github_pat_your_token
+PLAUSIBLE_SRC_URL=  # Optional
+PLAUSIBLE_DATA_API=  # Optional
+PLAUSIBLE_DATA_DOMAIN=  # Optional
+DEV= # Set true for dev
+```
 
 ### Website
 
