@@ -4,6 +4,27 @@ A site that automatically grabs `JOURNAL.md` files from my repositories and form
 
 Hosted at [journal.person20020.dev](https://journal.person20020.dev/)
 
+## Using the Site
+
+For a journal to show on the site it must have `show_on_site: True` in the frontmatter. Here is a list of the fields that it should have:
+```md
+---
+title: Journal/project title. If this isn't set the repo name will be used instead
+description: A description of the project. If not set it will be left blank
+start_date: The start date of the project. If not set it defaults to 0001-01-01
+image_url: A cover image for the journal.
+image_alt_text: Alt text for the cover image.
+---
+```
+
+Some other info is automatically filled generated:
+
+```yaml
+last_updated: Used to sort journals by latest on the home page and also displayed on the journal.
+path: Generated with '/journal/{repo_name}'
+journal_content: The content of the journal. It is pulled directly from GitHub. Only the root directory of the repository is searched. (Currently only JOURNAL.md will be retrieved and is case sensitive but I will fix that.)
+```
+
 ## Running
 
 - Clone the repository:
