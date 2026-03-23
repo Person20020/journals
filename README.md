@@ -9,6 +9,7 @@ Hosted at [journal.person20020.dev](https://journal.person20020.dev/)
 For a journal to show on the site it must have `show_on_site: True` in the frontmatter. Here is a list of the fields that it should have:
 ```md
 ---
+show_on_site: True
 title: Journal/project title. If this isn't set the repo name will be used instead
 description: A description of the project. If not set it will be left blank
 start_date: The start date of the project. If not set it defaults to 0001-01-01
