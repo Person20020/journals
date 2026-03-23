@@ -12,23 +12,18 @@ Hosted at [journal.person20020.dev](https://journal.person20020.dev/)
 git clone https://github.com/person20020/journals && cd journals
 ```
 
-### Docker
+Fill in environment variables in .env:
 
-Fill in the environment variables in the docker-compose.yaml.
-
-```yaml
-services:
-  web:
-    environment:
-      - PLAUSIBLE_SRC_URL=  # Optional for analytics
-      - PLAUSIBLE_DATA_API=  # Optional for analytics
-      - PLAUSIBLE_DOMAIN=  # Optional for analytics
-      - GITHUB_USERNAME=  # Used to link to your profile in the footer. If left empty the footer will show 'Made by @Person20020' instead
-  collector:
-    environment:
-      - GITHUB_USERNAME=  # Required
-      - GITHUB_TOKEN=  # Required
+```bash
+GITHUB_USERNAME=YourUsername
+GITHUB_TOKEN=github_pat_your_token
+PLAUSIBLE_SRC_URL=  # Optional
+PLAUSIBLE_DATA_API=  # Optional
+PLAUSIBLE_DATA_DOMAIN=  # Optional
+DEV= # Set true for dev
 ```
+
+### Docker
 
 Start the containers:
 
@@ -48,17 +43,10 @@ python -m venv venv && . ./venv/bin/activate # or ./venv/Scripts/activate on Win
 pip install -r requirements-dev.txt
 ```
 
-Create a .env file with the necessary variables in site/:
-
-```bash
-DEV=True
-GITHUB_USERNAME=yourusername
-```
-
 Run the website:
 
 ```bash
-export $(grep -v '^#' .env | xargs -d '\n') && python app.py
+export $(grep -v '^#' ../.env | xargs -d '\n') && python app.py
 ```
 
 ### Journal fetching script
@@ -71,54 +59,8 @@ python -m venv venv && . ./venv/bin/activate # or ./venv/Scripts/activate on Win
 pip install -r requirements.txt
 ```
 
-Create a .env file with the necessary variables in site/:
-
-```bash
-DEV=True
-GITHUB_USERNAME=YourUsername
-GITHUB_TOKEN=github_pat_your_token
-```
-
 Start the script:
 
 ```bash
-export $(grep -v '^#' .env | xargs -d '\n') && python collector.py
+export $(grep -v '^#' ../.env | xargs -d '\n') && python collector.py
 ```
-
-<!--
-### Run normally via the docker container:
-```bash
-docker build -t journals-site .
-docker run journals-site
-```
-
-### Run in dev mode via python:
-
-- Create venv
-```bash
-python -m venv venv
-```
-
-- Activate it
-
-On Linux/Mac:
-```bash
-source ./venv/bin/activate
-```
-
-Or for Windows:
-```bash
-./venv/Scripts/activate
-```
-
-- Install requirements,
-
-```bash
-pip install -r requirements-dev.txt
-```
-
-(This includes flask_sock for auto reload)
-
-```bash
-python app.py
-```-->

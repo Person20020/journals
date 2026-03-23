@@ -2,22 +2,30 @@ services:
   web:
     build: ./site
     volumes:
-      -journals-data:/app/templates/journals:ro
+      - journals-data:/app/data:ro
     ports:
       - "5000:5000"
+    depends_on:
+      collector:
+          condition: service_healthy
     restart: unless-stopped
     environment:
-      - PLAUSIBLE_SRC_URL=  # Optional
-      - PLAUSIBLE_DATA_API=  # Optional
-      - PLAUSIBLE_DATA_DOMAIN=  # Optional
-      - GITHUB_USERNAME=  # Optional
+      - PLAUSIBLE_SRC_URL=$PLAUSIBLE_SRC_URL
+      - PLAUSIBLE_DATA_API=$PLAUSIBLE_DATA_API
+      - PLAUSIBLE_DATA_DOMAIN=$PLAUSIBLE_DATA_DOMAIN
+      - GITHUB_USERNAME=$GITHUB_USERNAME
   collector:
     build: ./collector
     volumes:
-      -journals-data:/app/data
+      - journals-data:/app/data
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/data/journals.db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
     environment:
-      - GITHUB_USERNAME=  # Required
-      - GITHUB_TOKEN=  # Required
+      - GITHUB_USERNAME=$GITHUB_USERNAME
+      - GITHUB_TOKEN=$GITHUB_TOKEN
 volumes:
   journals-data:

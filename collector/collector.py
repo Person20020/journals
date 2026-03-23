@@ -20,7 +20,7 @@ if not GITHUB_USERNAME:
 
 GITHUB_API_URL = "https://api.github.com"
 
-DB_PATH = "/app/app/data/journals.db" if not IS_DEV else "../journals.db"
+DB_PATH = "/app/data/journals.db" if not IS_DEV else "../journals.db"
 
 logging.basicConfig(
     level=logging.DEBUG if IS_DEV else logging.WARNING,
@@ -126,6 +126,7 @@ def fetch_journals():
         journal_content_decoded = base64.b64decode(journal_content).decode("utf-8")
 
         # Get most recent commit date for the journal
+        last_updated = "0001-01-01T12:00:00Z"
         try:
             response_commit = requests.get(
                 f"{repo_url}/commits?path=JOURNAL.md&per_page=1",
@@ -136,10 +137,9 @@ def fetch_journals():
                 logger.warning(
                     f"Failed to fetch commits for {repo_name}: {response_commit.status_code} - {response.text}"
                 )
-                continue
             last_updated = response_commit.json()[0]["commit"]["author"]["date"]
 
-        except Exception:
+        except Exception as e:
             logger.warning(
                 f"Failed to fetch commits for repository '{repo_name}'. Skipping last_updated: {e}"
             )
@@ -162,7 +162,7 @@ def fetch_journals():
                 "start_date": start_date,
                 "image_url": "replace",
                 "image_alt_text": "replace",
-                "repo_url": response_repo.json().get("html_url", ""),
+                "repo_url": repo_url,
                 "last_updated": last_updated  # type: ignore
                 if "last_updated" in dir()
                 else "0001-01-01T12:00:00Z",
@@ -230,7 +230,7 @@ def fetch_journals():
 logger.debug("Fetching journals on startup...")
 fetch_journals()
 
-# Then, check the user events API and save then continue to check every X-Poll-Interval seconds specified in the response, check the user events API again for changes. If there are changes, fetch the repositories and update the journals.
+# Then, poll the events API for changes.
 events_url = f"{GITHUB_API_URL}/users/{GITHUB_USERNAME}/events"
 headers = {
     "Accept": "application/vnd.github+json",
@@ -239,34 +239,41 @@ headers = {
 }
 
 while True:
-    logger.debug("Checking for user events...")
-
     try:
-        response = requests.get(events_url, headers=headers, timeout=10)
-    except Exception as e:
-        logger.warning(f"Failed to check user events: {e}")
-        continue
+        logger.debug("Checking for user events...")
 
-    if response.status_code not in [200, 304]:
-        logger.warning(
-            f"Failed to fetch user events: {response.status_code} - {response.text}"
-        )
-        continue
+        try:
+            response = requests.get(events_url, headers=headers, timeout=10)
+        except Exception as e:
+            logger.warning(f"Failed to check user events: {e}")
+            continue
 
-    if response.status_code == 200:
-        poll_interval = int(response.headers.get("X-Poll-Interval", 60))
-        headers["If-None-Match"] = response.headers.get("ETag", "")
-        events = response.json()
-        relevant_events = {
-            "CreateEvent",
-            "DeleteEvent",
-            "PublicEvent",
-            "PushEvent",
-        }
-        if any(event["type"] in relevant_events for event in events):
-            logger.debug("User events changed, fetching journals...")
-            fetch_journals()
-    else:
-        logger.debug("No changes in user events.")
+        if response.status_code not in [200, 304]:
+            logger.warning(
+                f"Failed to fetch user events: {response.status_code} - {response.text}"
+            )
+            continue
 
-    time.sleep(poll_interval if "poll_interval" in locals() else 60)  # type: ignore
+        if response.status_code == 200:
+            poll_interval = int(response.headers.get("X-Poll-Interval", 60))
+            headers["If-None-Match"] = response.headers.get("ETag", "")
+            events = response.json()
+            relevant_events = {
+                "CreateEvent",
+                "DeleteEvent",
+                "PublicEvent",
+                "PushEvent",
+            }
+            if any(event["type"] in relevant_events for event in events):
+                logger.debug("User events changed, fetching journals...")
+                fetch_journals()
+        else:
+            logger.debug("No changes in user events.")
+
+        sleep_time = 0
+        while sleep_time < (poll_interval if "poll_interval" in locals() else 60):  # type: ignore
+            time.sleep(1)
+            sleep_time += 1
+
+    except (SystemExit, KeyboardInterrupt):
+        exit(0)

@@ -16,7 +16,7 @@ GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 
 IS_DEV = os.getenv("DEV", "False").lower() == "true"
 
-DB_PATH = "/app/app/data/journals.db" if not IS_DEV else "../journals.db"
+DB_PATH = "/app/data/journals.db" if not IS_DEV else "../journals.db"
 
 logging.basicConfig(
     level=logging.DEBUG if IS_DEV else logging.WARNING,
@@ -92,7 +92,12 @@ def inject_globals():
 
 @app.route("/")
 def index():
-    return flask.render_template("index.html", journals=get_journals())
+    journals = get_journals()
+    for journal in journals:  # type: ignore
+        journal["last_updated"] = datetime.datetime.fromisoformat(  # type: ignore
+            journal["last_updated"]  # type: ignore
+        ).strftime("%B %d, %Y")
+    return flask.render_template("index.html", journals=journals)
 
 
 # Project journals

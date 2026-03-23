@@ -2,9 +2,9 @@ FROM python:3.14-slim
 
 WORKDIR /app
 
-COPY scraper.py .
+COPY collector.py .
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "scraper.py"]
+CMD ["sh", "-c", "mkdir -p /app/data && touch /app/data/journals.db && python collector.py"]
