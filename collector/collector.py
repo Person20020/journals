@@ -33,13 +33,9 @@ logger = logging.getLogger(__name__)
 logger.info("Starting journal collector...")
 
 
-shutdown = False
-
-
 def signal_handler(sig, frame):
-    global shutdown
     logger.info("Shutdown signal received, exiting...")
-    shutdown = True
+    sys.exit(0)
 
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -252,7 +248,7 @@ headers = {
     "X-GitHub-Api-Version": "2026-03-10",
 }
 
-while not shutdown:
+while True:
     try:
         logger.debug("Checking for user events...")
 
@@ -286,10 +282,12 @@ while not shutdown:
 
         sleep_time = 0
         while sleep_time < (poll_interval if "poll_interval" in locals() else 60):  # type: ignore
-            if shutdown:
-                exit(0)
             time.sleep(1)
             sleep_time += 1
+
+    except (KeyboardInterrupt, SystemExit):
+        logger.debug("Received shutdown signal.")
+        sys.exit(0)
 
     except Exception as e:
         logger.warning(f"Error in main loop: {e}")

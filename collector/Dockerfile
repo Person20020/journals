@@ -7,4 +7,7 @@ COPY collector.py .
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["sh", "-c", "mkdir -p /app/data && touch /app/data/journals.db && python collector.py"]
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
