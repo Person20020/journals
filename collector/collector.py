@@ -1,6 +1,7 @@
 import base64
 import logging
 import os
+import signal
 import sqlite3
 import sys
 import time
@@ -30,6 +31,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 logger.info("Starting journal collector...")
+
+
+shutdown = False
+
+
+def signal_handler(sig, frame):
+    global shutdown
+    logger.info("Shutdown signal received, exiting...")
+    shutdown = True
+
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 
 def fetch_journals():
@@ -238,7 +252,7 @@ headers = {
     "X-GitHub-Api-Version": "2026-03-10",
 }
 
-while True:
+while not shutdown:
     try:
         logger.debug("Checking for user events...")
 
@@ -272,8 +286,10 @@ while True:
 
         sleep_time = 0
         while sleep_time < (poll_interval if "poll_interval" in locals() else 60):  # type: ignore
+            if shutdown:
+                exit(0)
             time.sleep(1)
             sleep_time += 1
 
-    except (SystemExit, KeyboardInterrupt):
-        exit(0)
+    except Exception as e:
+        logger.warning(f"Error in main loop: {e}")

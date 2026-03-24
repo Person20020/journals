@@ -10,10 +10,10 @@
     --color-accent-secondary: #d19a66;
 
     --color-background: #282c34;
-    --color-background-secondary: #636d83;
+    --color-background-secondary: #21252b;
 
-    --color-background-code: #21252b;
-    --color-background-kbd: #424a56; /* key shortcuts */
+    --color-background-code: var(--color-background-secondary);
+    --color-background-kbd: #424a56;
 
     --color-foreground: #abb2bf;
 
@@ -21,6 +21,7 @@
     --color-link: #98c379;
 
     --color-border: var(--color-foreground);
+    --color-main-border: #3e4451;
     --color-box-shadow: var(--color-foreground);
 
     --border-sm: 2px;

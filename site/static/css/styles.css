@@ -33,6 +33,24 @@ main {
     background-color: var(--color-background);
 }
 /* TODO: Set center main and set width based on screen size */
+@media (min-width: 480px) {
+    main {
+        margin-left: 3em;
+        margin-right: 3em;
+
+        border-left: 1px solid var(--color-main-border);
+        border-right: 1px solid var(--color-main-border);
+    }
+    .journal-card {
+        width: 30em;
+    }
+}
+@media (min-width: 768px) {
+    main {
+        margin-left: 5em;
+        margin-right: 5em;
+    }
+}
 
 a {
     color: var(--color-link);
@@ -79,10 +97,11 @@ kbd {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 1em;
+    justify-content: center;
 }
 
 .journal-card {
-    max-width: 30em;
+    width: 25em;
     display: flex;
     flex-direction: column;
     gap: 0.5em;
@@ -105,4 +124,9 @@ kbd {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.journal-card-image {
+    width: 100%;
+    height: auto;
 }

@@ -3,12 +3,14 @@
 {% block title %}{{ journal.title }}{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/journal.css') }}">
 <a href="/">&larr; Back to Home</a>
 <h1>{{ journal.title }}</h1>
 <p><strong>Project description:</strong> {{ journal.description }}</p>
 <p><strong>Last updated:</strong> {{ journal.last_updated }}</p>
 {% if journal.image_url %}
-<img src="{{ journal.image_url }}"
+<img class="journal-image"
+    src="{{ journal.image_url }}"
     {% if journal.image_alt_text %}
     alt="{{ journal.image_alt_text }}"
     {% endif %}
@@ -19,5 +21,10 @@
 </p>
 <div>
     {{ journal.journal_content }}
+</div>
+<br>
+<div>
+    <a href="/">&larr; Back to Home</a>
+    <a href="#" id="scroll-to-top" style="float: right;">Back to Top &uarr;</a>
 </div>
 {% endblock %}

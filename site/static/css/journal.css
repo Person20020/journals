@@ -1,0 +1,12 @@
+.journal-image {
+    width: 75%;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+img:not([class^="journal-image"]) {
+    display: block;
+    max-width: 65%;
+    margin-left: auto;
+    margin-right: auto;
+}

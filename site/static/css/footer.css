@@ -8,5 +8,5 @@ footer {
 
     background-color: var(--color-background-secondary);
 
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-main-border);
 }

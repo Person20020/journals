@@ -55,7 +55,7 @@ def get_journals(path="") -> dict[str, str] | list[dict[str, str]] | bool:
     cursor = conn.cursor()
     cursor.execute(
         f"""
-        SELECT {", ".join(journals_db_fields)} FROM journals {"WHERE path = ?" if path else ""} ORDER BY last_updated
+        SELECT {", ".join(journals_db_fields)} FROM journals {"WHERE path = ?" if path else ""} ORDER BY last_updated DESC
         """,
         (f"/journals/{path}",) if path else (),
     )
