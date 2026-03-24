@@ -51,6 +51,12 @@ main {
         margin-right: 5em;
     }
 }
+@media (min-width: 1280px) {
+    main {
+        margin-left: 10em;
+        margin-right: 10em;
+    }
+}
 
 a {
     color: var(--color-link);
