@@ -6,8 +6,8 @@ import sqlite3
 import sys
 import time
 
-import frontmatter
-import requests
+import frontmatter  # type: ignore
+import requests  # type: ignore
 
 IS_DEV = os.getenv("DEV", "False").lower() == "true"
 
@@ -103,10 +103,67 @@ def fetch_journals():
         repo_name = repo["name"]
         repo_url = repo["url"]
 
+        # Fetch the repository tree to find JOURNAL.md. If the tree is truncated, check the top-level contents as a fallback.
         try:
-            response_repo = requests.get(
-                f"{repo_url}/contents/JOURNAL.md", headers=headers, timeout=10
+            response = requests.get(
+                f"{GITHUB_API_URL}/repos/{GITHUB_USERNAME}/{repo_name}/git/trees/HEAD?recursive=1",
+                headers=headers,
+                timeout=10,
             )
+        except Exception as e:
+            logger.warning(f"Failed to fetch repository '{repo_name}': {e}")
+            continue
+
+        if response.status_code not in [200, 302, 304]:
+            logger.info(f"No JOURNAL.md found in repository {repo_name}")
+            continue
+
+        journal_filename = "JOURNAL.md"
+        file_url = None
+        for file in response.json().get("tree", []):
+            if file["path"].lower() == "journal.md":
+                journal_filename = file["path"]
+                file_url = file["url"]
+                break
+        if not journal_filename:
+            if response.json().get("truncated", False):
+                logger.warning(
+                    f"Repository {repo_name} tree is truncated, only c top-level files for JOURNAL.md "
+                )
+                response = requests.get(
+                    f"{GITHUB_API_URL}/repos/{GITHUB_USERNAME}/{repo_name}/contents",
+                    headers=headers,
+                    timeout=10,
+                )
+                if response.status_code not in [200, 302, 304]:
+                    logger.info(f"No JOURNAL.md found in repository {repo_name}")
+                    continue
+                for file in response.json():
+                    if file["name"].lower() == "journal.md":
+                        journal_filename = file["name"]
+                        file_url = file["url"]
+                        break
+                if not journal_filename:
+                    logger.info(f"No JOURNAL.md found in repository {repo_name}")
+                    continue
+            else:
+                logger.info(f"No JOURNAL.md found in repository {repo_name}")
+                continue
+
+        # Fetch the file content
+        try:
+            if file_url:
+                response_repo = requests.get(
+                    file_url,
+                    headers=headers,
+                    timeout=10,
+                )
+            else:
+                response_repo = requests.get(
+                    f"{GITHUB_API_URL}/repos/{GITHUB_USERNAME}/{repo_name}/contents/{journal_filename}",
+                    headers=headers,
+                    timeout=10,
+                )
         except Exception as e:
             logger.warning(f"Failed to fetch repository '{repo_name}': {e}")
             continue
@@ -127,13 +184,15 @@ def fetch_journals():
             continue
 
         content_encoding = response_repo.json().get("encoding", "")
-        if content_encoding != "base64":
+        if content_encoding == "base64":
+            journal_content_decoded = base64.b64decode(journal_content).decode("utf-8")
+        elif content_encoding == "utf-8":
+            journal_content_decoded = journal_content
+        else:
             logger.warning(
-                f"Unexpected encoding for JOURNAL.md in repository {repo_name}: {content_encoding}"
+                f"Unsupported content encoding '{content_encoding}' for JOURNAL.md in repository {repo_name}"
             )
             continue
-
-        journal_content_decoded = base64.b64decode(journal_content).decode("utf-8")
 
         # Get most recent commit date for the journal
         last_updated = "0001-01-01T12:00:00Z"
@@ -145,7 +204,7 @@ def fetch_journals():
             )
             if response_commit.status_code != 200:
                 logger.warning(
-                    f"Failed to fetch commits for {repo_name}: {response_commit.status_code} - {response.text}"
+                    f"Failed to fetch commits for {repo_name}: {response_commit.status_code} - {response_commit.text}"
                 )
             last_updated = response_commit.json()[0]["commit"]["author"]["date"]
 

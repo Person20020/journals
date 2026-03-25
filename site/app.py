@@ -2,11 +2,10 @@ import datetime
 import logging
 import os
 import sqlite3
-from typing import Any
 
-import flask
-import markdown
-import markupsafe
+import flask  # type: ignore
+import markdown  # type: ignore
+import markupsafe  # type: ignore
 
 PLAUSIBLE_SRC_URL = os.getenv("PLAUSIBLE_SRC_URL", "")
 PLAUSIBLE_DATA_API = os.getenv("PLAUSIBLE_DATA_API", "")
@@ -27,7 +26,7 @@ logger = logging.getLogger(__name__)
 app = flask.Flask(__name__)
 if IS_DEV:
     try:
-        from flask_sock import Sock
+        from flask_sock import Sock  # type: ignore
 
         sock = Sock(app)
     except ImportError as e:
@@ -128,7 +127,7 @@ def journal_pages(path):
         journal["last_updated"]  # type: ignore
     ).strftime("%B %d, %Y")
 
-    return flask.render_template(f"journal.html", journal=journal)
+    return flask.render_template("journal.html", journal=journal)
 
 
 # Auto reload websocket
