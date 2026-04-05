@@ -1,3 +1,5 @@
+name: journals
+
 services:
   web:
     build: ./site
@@ -7,25 +9,40 @@ services:
       - "5000:5000"
     depends_on:
       collector:
-          condition: service_healthy
+        condition: service_healthy
     restart: unless-stopped
     environment:
       - PLAUSIBLE_SRC_URL=$PLAUSIBLE_SRC_URL
       - PLAUSIBLE_DATA_API=$PLAUSIBLE_DATA_API
       - PLAUSIBLE_DATA_DOMAIN=$PLAUSIBLE_DATA_DOMAIN
       - GITHUB_USERNAME=$GITHUB_USERNAME
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   collector:
     build: ./collector
     volumes:
       - journals-data:/app/data
     healthcheck:
       test: ["CMD", "test", "-f", "/app/data/journals.db"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
       retries: 5
+      start_period: 30s
     restart: unless-stopped
     environment:
       - GITHUB_USERNAME=$GITHUB_USERNAME
       - GITHUB_TOKEN=$GITHUB_TOKEN
+
 volumes:
   journals-data:

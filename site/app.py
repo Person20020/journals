@@ -130,6 +130,10 @@ def journal_pages(path):
     return flask.render_template("journal.html", journal=journal)
 
 
+@app.route("/health")
+def health():
+    return flask.Response("OK", status=200, mimetype="text/plain")
+
 # Auto reload websocket
 if IS_DEV:
 
