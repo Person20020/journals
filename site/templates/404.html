@@ -1,6 +1,13 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
 
-{% block content %}
+{% if PLAUSIBLE_SRC_URL %}
+{# Plausible 404 #}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        plausible("404");
+    });
+</script>
+{% endif %}
 
 <h1>404 - Not Found</h1>
 <p>This page doesn't exist, perhaps it was moved?</p>
