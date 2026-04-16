@@ -50,29 +50,29 @@ journals_db_fields = [
 
 def get_journals(path="") -> dict[str, str] | list[dict[str, str]] | bool:
     """Get a list of dicts of journals with keys: title, description, last_updated, url, image_url, and repo_url"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute(
-        f"""
-        SELECT {", ".join(journals_db_fields)} FROM journals {"WHERE path = ?" if path else ""} ORDER BY last_updated DESC
-        """,
-        (f"/journals/{path}",) if path else (),
-    )
-    if path:
-        row = cursor.fetchone()
-        if not row:
-            return False
-        journal = {}
-        for i, field in enumerate(journals_db_fields):
-            journal[field] = row[i]
-        return journal
-    else:
-        journals = []
-        for i, row in enumerate(cursor.fetchall()):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""
+            SELECT {", ".join(journals_db_fields)} FROM journals {"WHERE path = ?" if path else ""} ORDER BY last_updated DESC
+            """,
+            (f"/journals/{path}",) if path else (),
+        )
+        if path:
+            row = cursor.fetchone()
+            if not row:
+                return False
             journal = {}
             for i, field in enumerate(journals_db_fields):
                 journal[field] = row[i]
-            journals.append(journal)
+            return journal
+        else:
+            journals = []
+            for i, row in enumerate(cursor.fetchall()):
+                journal = {}
+                for i, field in enumerate(journals_db_fields):
+                    journal[field] = row[i]
+                journals.append(journal)
 
     return journals
 
@@ -133,6 +133,7 @@ def journal_pages(path):
 @app.route("/health")
 def health():
     return flask.Response("OK", status=200, mimetype="text/plain")
+
 
 # Auto reload websocket
 if IS_DEV:
