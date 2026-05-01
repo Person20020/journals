@@ -15,13 +15,18 @@ GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 
 IS_DEV = os.getenv("DEV", "False").lower() == "true"
 
-DB_PATH = "/app/data/journals.db" if not IS_DEV else "../journals.db"
+DB_PATH = "/app/data/journals.db" if not IS_DEV else os.path.abspath("../journals.db")
 
 logging.basicConfig(
     level=logging.DEBUG if IS_DEV else logging.WARNING,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# Check if the database file exists
+if not os.path.exists(DB_PATH):
+    logger.error(f"Database file not found at {DB_PATH}. Please make sure it exists.")
+    raise FileNotFoundError(f"Database file not found at {DB_PATH}")
 
 app = flask.Flask(__name__)
 if IS_DEV:
